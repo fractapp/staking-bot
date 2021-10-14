@@ -1,0 +1,30 @@
+{
+  "name": "staking-bot",
+  "version": "1.0.0",
+  "description": "Staking bot for Fractapp",
+  "main": "index.ts",
+  "author": "Elshan Dzhafarov",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc",
+    "bot": "node ./bin/index.js",
+    "devBot": "ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@keyv/mongo": "^1.1.0",
+    "@polkadot/api": "^6.1.1",
+    "@polkadot/keyring": "^7.4.1",
+    "@substrate/txwrapper-polkadot": "^1.2.16",
+    "@types/keyv": "^3.1.3",
+    "@types/node": "^16.10.1",
+    "axios": "^0.21.4",
+    "bn.js": "^5.2.0",
+    "dotenv": "^10.0.0",
+    "keyv": "^4.0.3",
+    "tsc": "^2.0.3",
+    "typescript": "^4.4.3"
+  },
+  "devDependencies": {
+    "ts-node": "^10.2.1"
+  }
+}
