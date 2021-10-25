@@ -76,7 +76,7 @@ async function start() {
 
 
 
-    const mainJob = schedule.scheduleJob("* * * * *", async function(){
+    const mainJob = schedule.scheduleJob("1 * * * *", async function(){
         console.log("start app...")
 
         while (true) {
@@ -105,6 +105,7 @@ async function start() {
         }
     });
     mainJob.invoke()
+    mainJob.cancelNext(false)
 }
 
 async function getApiInstance(wssUrl: string): Promise<ApiPromise> {
