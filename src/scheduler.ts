@@ -116,8 +116,8 @@ export class Scheduler  {
     private async getUsersStakingInfoByNetwork(network: Network): Promise<Map<string, StakingInfo>> {
         const api = this.apiByNetwork.get(network)!
 
-        const stakingInfoPromise = await api.query.staking.ledger.entries()
-        const targetsPromise = await api.query.staking.nominators.entries()
+        const stakingInfoPromise = api.query.staking.ledger.entries()
+        const targetsPromise = api.query.staking.nominators.entries()
 
         const stakingInfo = await stakingInfoPromise
         const activeEra = await api.query.staking.activeEra()

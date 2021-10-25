@@ -4,7 +4,6 @@ import {ApiPromise, WsProvider} from "@polkadot/api";
 import dotenv from "dotenv";
 import {ActionHandler, MsgAction} from "./actions";
 import {Cache} from "./cache";
-import {Const} from "./const";
 import {FractappClient} from "./api";
 import Keyv from 'keyv';
 import {DB} from "./db";
@@ -76,31 +75,36 @@ async function start() {
     });
 
 
-    console.log("start app...")
-    while (true) {
-        try {
-            const newMsgs = await client.getUnreadMessages()
 
-            const promises: Array<Promise<void>> = []
-            for (const msg of newMsgs.messages) {
-                console.log("msg id: " + msg.id)
-                console.log("msg: " + JSON.stringify(msg))
+    const mainJob = schedule.scheduleJob("* * * * *", async function(){
+        console.log("start app...")
 
-                try {
-                    promises.push(action(msg, newMsgs.users[msg.sender]))
-                } catch (e) {
-                    console.log("Error: " + e)
+        while (true) {
+            try {
+                const newMsgs = await client.getUnreadMessages()
+
+                const promises: Array<Promise<void>> = []
+                for (const msg of newMsgs.messages) {
+                    console.log("msg id: " + msg.id)
+                    console.log("msg: " + JSON.stringify(msg))
+
+                    try {
+                        promises.push(action(msg, newMsgs.users[msg.sender]))
+                    } catch (e) {
+                        console.log("Error: " + e)
+                    }
                 }
-            }
 
-            for (const promise of promises) {
-                await promise
+                for (const promise of promises) {
+                    await promise
+                }
+            } catch (e) {
+                console.log("Error: " + e)
             }
-        } catch (e) {
-            console.log("Error: " + e)
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        await new Promise(resolve => setTimeout(resolve, 1000));
-    }
+    });
+    mainJob.invoke()
 }
 
 async function getApiInstance(wssUrl: string): Promise<ApiPromise> {
