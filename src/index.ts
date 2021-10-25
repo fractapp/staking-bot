@@ -8,7 +8,7 @@ import {FractappClient} from "./api";
 import Keyv from 'keyv';
 import {DB} from "./db";
 import {Scheduler} from "./scheduler";
-import schedule from 'node-schedule';
+import {Const} from "./const";
 
 dotenv.config()
 
@@ -44,7 +44,7 @@ async function start() {
     await client.auth(seed)
     console.log("fractapp authorization: Success")
 
-    const schedulerJob = schedule.scheduleJob({hour: 15, minute: 0, dayOfWeek: 0}, async function(){
+    setInterval(async () => {
         try {
             console.log("start scheduler...")
             await scheduler.call()
@@ -52,9 +52,10 @@ async function start() {
         } catch (e) {
             console.log("error scheduler: " + e)
         }
-    });
+    }, Const.SchedulerTimeout)
 
-    const updateStakingInfoJob = schedule.scheduleJob("*/20 * * * *", async function(){
+
+    setInterval(async () => {
         try {
             console.log("start of update staking info...")
             await updateStakingInfo()
@@ -62,9 +63,9 @@ async function start() {
         } catch (e) {
             console.log("error update staking: " + e)
         }
-    });
+    }, Const.StakingInfoUpdateTimeout)
 
-    const updateValidatorsCache = schedule.scheduleJob("*/10 * * * *", async function(){
+    setInterval(async () => {
         try {
             console.log("start of validators cache...")
             await updateValidators()
@@ -72,40 +73,35 @@ async function start() {
         } catch (e) {
             console.log("error update validators: " + e)
         }
-    });
+    }, Const.StakingInfoUpdateTimeout)
 
 
+    console.log("start app...")
 
-    const mainJob = schedule.scheduleJob("1 * * * *", async function(){
-        console.log("start app...")
+    while (true) {
+        try {
+            const newMsgs = await client.getUnreadMessages()
 
-        while (true) {
-            try {
-                const newMsgs = await client.getUnreadMessages()
+            const promises: Array<Promise<void>> = []
+            for (const msg of newMsgs.messages) {
+                console.log("msg id: " + msg.id)
+                console.log("msg: " + JSON.stringify(msg))
 
-                const promises: Array<Promise<void>> = []
-                for (const msg of newMsgs.messages) {
-                    console.log("msg id: " + msg.id)
-                    console.log("msg: " + JSON.stringify(msg))
-
-                    try {
-                        promises.push(action(msg, newMsgs.users[msg.sender]))
-                    } catch (e) {
-                        console.log("Error: " + e)
-                    }
+                try {
+                    promises.push(action(msg, newMsgs.users[msg.sender]))
+                } catch (e) {
+                    console.log("Error: " + e)
                 }
-
-                for (const promise of promises) {
-                    await promise
-                }
-            } catch (e) {
-                console.log("Error: " + e)
             }
-            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            for (const promise of promises) {
+                await promise
+            }
+        } catch (e) {
+            console.log("Error: " + e)
         }
-    });
-    mainJob.invoke()
-    mainJob.cancelNext(false)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 }
 
 async function getApiInstance(wssUrl: string): Promise<ApiPromise> {
