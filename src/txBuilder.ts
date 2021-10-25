@@ -39,9 +39,14 @@ export class TxBuilder {
             registry: registry,
         };
 
-        const blockHeader = await this.api.rpc.chain.getHeader()
-        const genesisHash = await this.api.rpc.chain.getBlockHash(0)
-        const nonce = await this.api.rpc.system.accountNextIndex(sender)
+        const blockHeaderPromise = this.api.rpc.chain.getHeader()
+        const genesisHashPromise = this.api.rpc.chain.getBlockHash(0)
+        const noncePromise = this.api.rpc.system.accountNextIndex(sender)
+
+        const blockHeader = await blockHeaderPromise
+        const genesisHash = await genesisHashPromise
+        const nonce = await noncePromise
+
         return {
             opt: opt,
             txInfo: {
@@ -64,11 +69,13 @@ export class TxBuilder {
 
     public async bound(sender: string, amount: string): Promise<UnsignedTransaction> {
         const validators = this.cache.getTopValidators()
-        const staking = await this.api.query.staking.ledger(sender)
-       // const targets = await this.api.query.staking.nominators(sender)
-        const stakingInfo = staking.isNone ? null : staking.unwrap()
+        const stakingPromise = this.api.query.staking.ledger(sender)
+        const basePrimise = this.getBase(sender)
 
-        const base = await this.getBase(sender)
+        const staking = await stakingPromise
+        const base = await basePrimise
+
+        const stakingInfo = staking.isNone ? null : staking.unwrap()
 
         const nominate = methods.staking.nominate({
             targets: validators
@@ -91,7 +98,6 @@ export class TxBuilder {
             const bondExtra = methods.staking.bondExtra({
                 maxAdditional: amount
             }, base.txInfo, base.opt)
-
                 /*    if (!targets.isNone) {
                 const oldTargets = targets.unwrap().targets
                 let count = 0

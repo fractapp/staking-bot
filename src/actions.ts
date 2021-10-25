@@ -101,7 +101,7 @@ export class ActionHandler {
 
         await this.client.sendMsg({
             version: 1,
-            value: `Hi!\nYou can open a deposit (staking) for DOT or KSM and receive from ${min}% to ${max}%  per annum!` +
+            value: `Hi!\nYou can open a deposit (staking) for DOT or KSM and receive from ${min}% to ${max}% per annum!` +
                 (isDepositExist ? "\n\nAlso, you have already opened deposits." : "") +
                 (warns != 0 ? (`\n\nYour ${warns == 1 ? 'deposit is inactive' : 'deposits are inactive'} because it is below the minimum amount.`) : ""),
             action: "",

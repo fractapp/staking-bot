@@ -1,5 +1,5 @@
 import {DefaultMsgAction, Message, Profile} from "./types/api";
-import {Action, Network, toCurrency} from "./types/enums";
+import {Network, toCurrency} from "./types/enums";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import dotenv from "dotenv";
 import {ActionHandler, MsgAction} from "./actions";
@@ -9,6 +9,7 @@ import {FractappClient} from "./api";
 import Keyv from 'keyv';
 import {DB} from "./db";
 import {Scheduler} from "./scheduler";
+import schedule from 'node-schedule';
 
 dotenv.config()
 
@@ -44,11 +45,17 @@ async function start() {
     await client.auth(seed)
     console.log("fractapp authorization: Success")
 
-    setTimeout(async () => {
-        await scheduler.call()
-    }, Const.SchedulerTimeout)
+    const schedulerJob = schedule.scheduleJob({hour: 15, minute: 0, dayOfWeek: 0}, async function(){
+        try {
+            console.log("start scheduler...")
+            await scheduler.call()
+            console.log("end of scheduler")
+        } catch (e) {
+            console.log("error scheduler: " + e)
+        }
+    });
 
-    setTimeout(async () => {
+    const updateStakingInfoJob = schedule.scheduleJob("*/20 * * * *", async function(){
         try {
             console.log("start of update staking info...")
             await updateStakingInfo()
@@ -56,9 +63,9 @@ async function start() {
         } catch (e) {
             console.log("error update staking: " + e)
         }
-    }, Const.StakingInfoUpdateTimeout)
+    });
 
-    setTimeout(async () => {
+    const updateValidatorsCache = schedule.scheduleJob("*/10 * * * *", async function(){
         try {
             console.log("start of validators cache...")
             await updateValidators()
@@ -66,7 +73,8 @@ async function start() {
         } catch (e) {
             console.log("error update validators: " + e)
         }
-    }, Const.ValidatorsUpdateTimeout)
+    });
+
 
     console.log("start app...")
     while (true) {
@@ -88,7 +96,6 @@ async function start() {
             for (const promise of promises) {
                 await promise
             }
-            console.log("Sleep 1 seconds")
         } catch (e) {
             console.log("Error: " + e)
         }
@@ -155,6 +162,7 @@ async function action(msg: Message, user: Profile) {
         await actionHandler.init(msg, user)
     }
     await client.setRead([msg.id])
+    console.log("Success: (msgId)" + msg.id)
 }
 
 start()

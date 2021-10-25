@@ -43,7 +43,7 @@ export class MessageCreator {
         const amount = MathUtil.convertFromPlanckToString(cacheInfo.minStakingAmountPlanks, cacheInfo.decimalsCount)
 
         if (activeAmount.cmp(cacheInfo.minStakingAmountPlanks) < 0) {
-            return `\n\nThe deposit is not active. The deposit must have more than the minimum amount of ${amount} ${fromCurrency(this.currency)}!`
+            return `\n\nThe $${fromCurrency(this.currency)} deposit is not active. The deposit must have more than the minimum amount of ${amount} ${fromCurrency(this.currency)}!`
         }
 
         return null
@@ -103,12 +103,13 @@ export class MessageCreator {
 
         const buttons = []
         let totalWithdrawPlanks = new BN(0)
-        let value = null
+        let withdrawRequestText = ""
         if (stakingInfo != null && stakingInfo.unlocking.length > 0) {
             const activeEra = await this.api.query.staking.activeEra()
 
-            value = this.currency == Currency.DOT ? `🔴DOT requests🔴\n\n` : `🔵KSM requests🔵\n\n`
+            withdrawRequestText = this.currency == Currency.DOT ? `🔴DOT requests🔴\n\n` : `🔵KSM requests🔵\n\n`
 
+            let isExistNotActiveWR = false
             for (let unlocking of stakingInfo.unlocking) {
                 const planksValue = unlocking.value.unwrap().toBn()
                 const amount = MathUtil.convertFromPlanckToString(planksValue, info.decimalsCount)
@@ -119,16 +120,28 @@ export class MessageCreator {
                 if (time < 0) {
                     totalWithdrawPlanks = totalWithdrawPlanks.add(planksValue)
                 } else {
-                    value += `${amount} ${fromCurrency(this.currency)} unlocked after ${time} days\n`
+                    if (!isExistNotActiveWR) {
+                        isExistNotActiveWR = true
+                    }
+                    withdrawRequestText += `${amount} ${fromCurrency(this.currency)} unlocked after ${time} days\n`
                 }
             }
 
-            value += this.warning(stakingInfo.active.toBn()) ?? ""
+            if (!isExistNotActiveWR) {
+                withdrawRequestText = this.warning(stakingInfo.active.toBn()) ?? ""
+            } else {
+                withdrawRequestText += this.warning(stakingInfo.active.toBn()) ?? ""
+            }
+        }
+
+        let value: string | null = null
+        if (withdrawRequestText) {
+            value = withdrawRequestText
         }
 
         if (totalWithdrawPlanks.cmp(new BN(0)) > 0) {
             const withdrawText = `${MathUtil.convertFromPlanckToString(totalWithdrawPlanks, info.decimalsCount)} ${fromCurrency(this.currency)}`
-            value += `You can withdraw ${withdrawText}`
+            value += `\nYou can withdraw ${withdrawText}`
             buttons.push({
                 value: `Withdraw ${withdrawText}`,
                 action: MsgAction.Confirm,
