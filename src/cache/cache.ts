@@ -315,8 +315,11 @@ export class Cache {
     }
 
     public async init() {
+        console.log("start updateStakingInfo")
         await this.updateStakingInfo()
+        console.log("start updateValidators")
         await this.updateValidators()
+        console.log("start updateUsersStaking")
         await this.updateUsersStaking()
     }
     public async subscriber() {

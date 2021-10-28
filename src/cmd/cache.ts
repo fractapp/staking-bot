@@ -26,7 +26,9 @@ async function start() {
 
     console.log("init blockchain info...")
 
+    console.log("init Polkadot cache")
     await cacheByNetwork.get(Network.Polkadot)!.init()
+    console.log("init Kusama cache")
     await cacheByNetwork.get(Network.Kusama)!.init()
 
     console.log("end of init blockchain info")
