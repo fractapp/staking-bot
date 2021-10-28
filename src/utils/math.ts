@@ -2,7 +2,7 @@ import BN from "bn.js";
 
 export namespace MathUtil {
     export function convertFromPlanckToString(
-        planck: BN,
+        planck: bigint,
         decimals: number,
     ): string {
         let value = planck.toString();

@@ -1,42 +1,60 @@
-import {DefaultMsgAction, Message, Profile} from "./types/api";
-import {Network, toCurrency} from "./types/enums";
+import {DefaultMsgAction, Message, Profile} from "../types/api";
+import {Network, toCurrency} from "../types/enums";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import dotenv from "dotenv";
-import {ActionHandler, MsgAction} from "./actions";
-import {Cache} from "./cache";
-import {FractappClient} from "./api";
-import Keyv from 'keyv';
-import {DB} from "./db";
-import {Scheduler} from "./scheduler";
-import {Const} from "./const";
+import {ActionHandler, MsgAction} from "../stakingBot/actions";
+import {FractappClient} from "../fractapp/client";
+import {DB} from "../db/db";
+import {Scheduler} from "../stakingBot/scheduler";
+import {CacheClient} from "../utils/cacheClient";
+import {Const} from "../utils/const";
 
 dotenv.config()
 
 const client = new FractappClient()
 let actionHandler: ActionHandler
 
-let cache: Map<Network, Cache> = new Map<Network, Cache>()
+let cache: Map<Network, CacheClient> = new Map<Network, CacheClient>()
 
 async function start() {
     const connectionString = process.env["MONGODB_CONNECTION"] as string
-    const keyv = new Keyv(connectionString);
+    const cacheServerPort = process.env["CACHE_PORT"] as string
 
     const seed = process.env["SEED"] as string
     const apiPolkadot = await getApiInstance(process.env["POLKADOT_RPC_URL"] as string)
     const apiKusama = await getApiInstance(process.env["KUSAMA_RPC_URL"] as string)
 
-    cache.set(Network.Polkadot, new Cache(apiPolkadot))
-    cache.set(Network.Kusama, new Cache(apiKusama))
+    cache.set(Network.Polkadot, new CacheClient(cacheServerPort, Network.Polkadot))
+    cache.set(Network.Kusama, new CacheClient(cacheServerPort, Network.Kusama))
 
-    const db = new DB(keyv)
+    const db = new DB(connectionString)
+
+    console.log("connect to db...")
+    await db.connect()
+    console.log("end of connect to db")
+
     actionHandler = new ActionHandler(client, apiPolkadot, apiKusama, cache.get(Network.Polkadot)!, cache.get(Network.Kusama)!, db)
-
-    const scheduler = new Scheduler(apiPolkadot, apiKusama, cache.get(Network.Polkadot)!, cache.get(Network.Kusama)!, db, actionHandler)
+    const scheduler = new Scheduler(cache.get(Network.Polkadot)!, cache.get(Network.Kusama)!, db, actionHandler)
 
     console.log("init blockchain info...")
 
-    await updateStakingInfo()
-    await updateValidators()
+    let isInit = false
+    while (!isInit) {
+        const polkadotCache = cache.get(Network.Polkadot)!
+        const kusamaCache = cache.get(Network.Kusama)!
+
+        console.log("init cache")
+
+        try {
+            await polkadotCache.updateCache()
+            await kusamaCache.updateCache()
+            isInit = true
+        } catch (e) {
+            console.log("wait init cache")
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 5 * Const.Sec));
+    }
 
     console.log("end of init blockchain info")
 
@@ -45,39 +63,12 @@ async function start() {
     console.log("fractapp authorization: Success")
 
     setInterval(async () => {
-        try {
-            console.log("start scheduler...")
-            await scheduler.call()
-            console.log("end of scheduler")
-        } catch (e) {
-            console.log("error scheduler: " + e)
-        }
+        console.log("start scheduler")
+        await scheduler.call()
+        console.log("end of scheduler")
     }, Const.SchedulerTimeout)
 
-
-    setInterval(async () => {
-        try {
-            console.log("start of update staking info...")
-            await updateStakingInfo()
-            console.log("end of update staking info")
-        } catch (e) {
-            console.log("error update staking: " + e)
-        }
-    }, Const.StakingInfoUpdateTimeout)
-
-    setInterval(async () => {
-        try {
-            console.log("start of validators cache...")
-            await updateValidators()
-            console.log("end of validators cache")
-        } catch (e) {
-            console.log("error update validators: " + e)
-        }
-    }, Const.StakingInfoUpdateTimeout)
-
-
     console.log("start app...")
-
     while (true) {
         try {
             const newMsgs = await client.getUnreadMessages()
@@ -107,20 +98,6 @@ async function start() {
 async function getApiInstance(wssUrl: string): Promise<ApiPromise> {
     const wsProvider = new WsProvider(wssUrl);
     return await ApiPromise.create({provider: wsProvider})
-}
-
-async function updateStakingInfo(): Promise<[void, void]> {
-    return Promise.all([
-        cache.get(Network.Polkadot)!.updateStakingInfo(),
-        cache.get(Network.Kusama)!.updateStakingInfo()
-    ])
-}
-
-async function updateValidators(): Promise<[void, void]> {
-    return Promise.all([
-        cache.get(Network.Polkadot)!.updateValidators(),
-        cache.get(Network.Kusama)!.updateValidators()
-    ])
 }
 
 async function action(msg: Message, user: Profile) {

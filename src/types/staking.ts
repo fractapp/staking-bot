@@ -11,14 +11,15 @@ export type ValidatorInfo = {
 }
 
 export type StakingInfo = {
-    minStakingAmountPlanks: BN,
+    activeEra: number,
+    minStakingAmountPlanks: bigint,
     maxNominations: number,
     maxNominatorRewardedPerValidator: number,
     isAvailable: boolean,
     averageAPY: number,
     decimalsCount: number,
     eraDuration: number,
-    decimals: BN,
+    decimals: bigint,
     unbondingPeriod: number
 }
 

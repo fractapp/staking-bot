@@ -1,14 +1,14 @@
-import {Button, DefaultMsgAction, Message, Profile, Row} from "./types/api";
-import {Action, Currency, fromCurrency, getNativeCurrency, getNetwork, Network, toCurrency} from "./types/enums";
+import {DefaultMsgAction, Message, Profile, Row} from "../types/api";
+import {Action, Currency, fromCurrency, getNativeCurrency, getNetwork, Network, toCurrency} from "../types/enums";
 import {ApiPromise} from "@polkadot/api";
-import {Cache} from "./cache";
-import {FractappClient} from "./api";
-import {TxBuilder} from "./txBuilder";
-import {MathUtil} from "./math";
+import {FractappClient} from "../fractapp/client";
+import {TxBuilder} from "../utils/txBuilder";
+import {MathUtil} from "../utils/math";
 import BN from "bn.js";
 import {UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {MessageCreator} from "./messageCreator";
-import {DB} from "./db";
+import {DB} from "../db/db";
+import {CacheClient} from "../utils/cacheClient";
 
 export enum MsgAction {
     ChooseNewDeposit = "chooseNewDeposit",
@@ -26,10 +26,10 @@ export class ActionHandler {
     private apiByNetwork = new  Map<Network, ApiPromise>()
     private messageCreatorByNetwork = new  Map<Network, MessageCreator>()
     private txBuilderByNetwork = new  Map<Network, TxBuilder>()
-    private cacheByNetwork = new  Map<Network, Cache>()
+    private cacheByNetwork = new  Map<Network, CacheClient>()
     private db: DB
 
-    constructor(client: FractappClient, polkadotApi: ApiPromise, kusamaApi: ApiPromise, polkadotCache: Cache, kusamaCache: Cache, db: DB) {
+    constructor(client: FractappClient, polkadotApi: ApiPromise, kusamaApi: ApiPromise, polkadotCache: CacheClient, kusamaCache: CacheClient, db: DB) {
         this.apiByNetwork.set(Network.Polkadot, polkadotApi)
         this.apiByNetwork.set(Network.Kusama, kusamaApi)
 
@@ -47,8 +47,8 @@ export class ActionHandler {
     }
 
     public async init(msg: Message, user: Profile) {
-        const stakingInfoPolkadot = this.cacheByNetwork.get(Network.Polkadot)!.getStakingInfo()
-        const stakingInfoKusama = this.cacheByNetwork.get(Network.Kusama)!.getStakingInfo()
+        const stakingInfoPolkadot = await this.cacheByNetwork.get(Network.Polkadot)!.getStakingInfo()
+        const stakingInfoKusama = await this.cacheByNetwork.get(Network.Kusama)!.getStakingInfo()
 
         const dotAPY = stakingInfoPolkadot.averageAPY
         const ksmAPY = stakingInfoKusama.averageAPY
@@ -294,7 +294,8 @@ export class ActionHandler {
         const network: Network = getNetwork(currency)
 
         const api = this.apiByNetwork.get(network)!
-        const info = this.cacheByNetwork.get(network)!.getStakingInfo()
+        const info = await this.cacheByNetwork.get(network)!.getStakingInfo()
+        const stakingInfo = await this.cacheByNetwork.get(network)!.getUsersStaking()
         const txBuilder = this.txBuilderByNetwork.get(network)!
 
         let limit = null
@@ -305,8 +306,8 @@ export class ActionHandler {
                 unsignedTx = await txBuilder.bound(user.addresses[network], info.minStakingAmountPlanks.toString())
                 break
             case Action.CreateWithdrawRq:
-                const staking = await api.query.staking.ledger(user.addresses[currency])
-                limit = staking.unwrap().active.toBn().toString()
+                const userStaking = stakingInfo[user.addresses[currency]]!
+                limit = userStaking.active.toString()
                 unsignedTx = await txBuilder.withdraw(user.addresses[network], info.minStakingAmountPlanks.toString(), true)
                 break
         }
@@ -376,13 +377,13 @@ export class ActionHandler {
 
         const txBuilder = this.txBuilderByNetwork.get(network)!
 
-        const info = this.cacheByNetwork.get(getNetwork(currency))!.getStakingInfo()
+        const info = await this.cacheByNetwork.get(getNetwork(currency))!.getStakingInfo()
 
         let unsignedTx: UnsignedTransaction | null = null
         switch (action) {
             case Action.Open:
                 const min = info.minStakingAmountPlanks
-                if (new BN(value!).cmp(min) < 0) {
+                if (BigInt(value!) < min) {
                     await this.enter(
                         currency,
                         Action.Open,
@@ -395,9 +396,11 @@ export class ActionHandler {
                 unsignedTx = await txBuilder.bound(user.addresses[network], value)
                 break
             case Action.CreateWithdrawRq:
-                const stakingInfo = await this.apiByNetwork.get(network)!.query.staking.ledger(user.addresses[network])
-                const stakingBalance = stakingInfo.isNone ? new BN(0) : stakingInfo.unwrap().active.toBn()
-                if (new BN(value!).cmp(stakingBalance) > 0) {
+                const stakingInfo = await this.cacheByNetwork.get(network)!.getUsersStaking()
+
+                const userStaking = stakingInfo[user.addresses[network]]
+                const stakingBalance = userStaking == undefined ? BigInt(0) : userStaking.active
+                if (BigInt(value!) > stakingBalance) {
                     await this.enter(
                         currency,
                         Action.CreateWithdrawRq,
@@ -407,7 +410,7 @@ export class ActionHandler {
                     )
                     return
                 }
-                unsignedTx = await txBuilder.withdraw(user.addresses[network], value, new BN(value!).cmp(stakingBalance) == 0)
+                unsignedTx = await txBuilder.withdraw(user.addresses[network], value, BigInt( value) == stakingBalance)
                 break
             case Action.AddAmount:
                 const account = await this.apiByNetwork.get(network)!.query.system.account(user.addresses[network]);

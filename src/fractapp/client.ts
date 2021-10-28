@@ -2,14 +2,15 @@ import {Keyring} from "@polkadot/keyring";
 import {stringToU8a, u8aToHex} from '@polkadot/util';
 import {cryptoWaitReady} from '@polkadot/util-crypto';
 import {KeyringPair} from "@polkadot/keyring/types";
-import {Currency, Network} from "./types/enums";
-import {MessageRq, UndeliveredMessagesInfo} from "./types/api";
+import {Currency, Network} from "../types/enums";
+import {MessageRq, UndeliveredMessagesInfo} from "../types/api";
 import axios from 'axios'
+import {Const} from "../utils/const";
 
 const authMsg = 'It is my fractapp rq:';
 const signAddressMsg = 'It is my auth key for fractapp:';
 
-const timeout = 10000
+const timeout = 5 * Const.Sec
 
 export class FractappClient {
     private jwt: string | null = null

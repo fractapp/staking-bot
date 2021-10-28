@@ -1,19 +1,18 @@
-import {Network} from "./types/enums";
+import {Network} from "../types/enums";
 import {ApiPromise} from "@polkadot/api";
-import {Cache} from "./cache";
 import {TypeRegistry, construct, getRegistry, methods, UnsignedTransaction, createMetadata} from "@substrate/txwrapper-polkadot";
 import { EXTRINSIC_VERSION } from '@polkadot/types/extrinsic/v4/Extrinsic';
 import {BaseTxInfo, OptionsWithMeta} from "@substrate/txwrapper-core";
 import {Keyring} from "@polkadot/keyring";
 import BN from "bn.js";
-import {Const} from "./const";
+import {CacheClient} from "./cacheClient";
 
 export class TxBuilder {
     private api: ApiPromise
-    private cache: Cache
+    private cache: CacheClient
     private network: Network
 
-    constructor(api: ApiPromise, cache: Cache, network: Network) {
+    constructor(api: ApiPromise, cache: CacheClient, network: Network) {
         this.api = api
         this.cache = cache
         this.network = network
@@ -68,7 +67,7 @@ export class TxBuilder {
     }
 
     public async bound(sender: string, amount: string): Promise<UnsignedTransaction> {
-        const validators = this.cache.getTopValidators()
+        const validators = await this.cache.getTopValidators()
         const stakingPromise = this.api.query.staking.ledger(sender)
         const basePrimise = this.getBase(sender)
 
@@ -130,7 +129,7 @@ export class TxBuilder {
     }
 
     public async updateNominations(sender: string): Promise<UnsignedTransaction> {
-        const validators = this.cache.getTopValidators()
+        const validators = await this.cache.getTopValidators()
 
         const base = await this.getBase(sender)
         return methods.staking.nominate({
