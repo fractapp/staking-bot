@@ -26,10 +26,8 @@ async function start() {
 
     console.log("init blockchain info...")
 
-    await Promise.all([
-        cacheByNetwork.get(Network.Polkadot)!.init(),
-        cacheByNetwork.get(Network.Kusama)!.init(),
-    ])
+    await cacheByNetwork.get(Network.Polkadot)!.init()
+    await cacheByNetwork.get(Network.Kusama)!.init()
 
     console.log("end of init blockchain info")
 
@@ -41,7 +39,7 @@ async function start() {
 
     console.log("end of subscribe...")
 
-    app.use(function(err: any, req: any, res: any, next: any) {
+    app.use(function (err: any, req: any, res: any, next: any) {
         console.error(err.stack);
         res.status(500).send();
     });
