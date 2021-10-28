@@ -214,10 +214,8 @@ export class Cache {
     }
 
     private async updateUsersStaking(): Promise<void> {
-        const stakingInfoPromise = this.api.query.staking.ledger.entries()
-        const targetsPromise = this.api.query.staking.nominators.entries()
-
-        const stakingInfo = await stakingInfoPromise
+        const stakingInfo = await this.api.query.staking.ledger.entries()
+        const targets = await this.api.query.staking.nominators.entries()
 
         const stakingByUser: Record<string, UserStakingInfo> = {}
         for (const staking of stakingInfo) {
@@ -254,7 +252,6 @@ export class Cache {
             }
         }
 
-        const targets = await targetsPromise
         for (const target of targets) {
             const address = target[0].args[0].toHuman()
             const targetInfo = target[1].isNone ? null :  target[1].unwrap()
