@@ -1,10 +1,8 @@
-import {Button, Message, Profile} from "../types/api";
+import {Button, Profile} from "../types/api";
 import {Action, Currency, fromCurrency, Network} from "../types/enums";
 import {MathUtil} from "../utils/math";
-import {ApiPromise} from "@polkadot/api";
 import {Const} from "../utils/const";
 import {MsgAction} from "./actions";
-import BN from "bn.js";
 import {CacheClient} from "../utils/cacheClient";
 
 export type DepositInfo = {
@@ -26,13 +24,11 @@ export type WithdrawRequestsInfo = {
 }
 
 export class MessageCreator {
-    private readonly api: ApiPromise
     private readonly cache: CacheClient
     private readonly network: Network
     private readonly currency: Currency
 
-    constructor(api: ApiPromise, cache: CacheClient, network: Network, currency: Currency) {
-        this.api = api
+    constructor(cache: CacheClient, network: Network, currency: Currency) {
         this.cache = cache
         this.network = network
         this.currency = currency
@@ -83,8 +79,8 @@ export class MessageCreator {
             }
 
             value =   (this.currency == Currency.KSM ? '🔵KSM Deposit🔵\n' : '🔴DOT Deposit🔴\n') +
-                `Withdrawal requests: ${stakingInfo!.unlocking.length}\n` +
-                `Active amount: ${MathUtil.convertFromPlanckToString(stakingInfo!.active, cacheInfo.decimalsCount)} ${fromCurrency(this.currency)}\n` +
+                `Total withdrawal request: ${stakingInfo!.unlocking.length}\n` +
+                `Active deposit amount: ${MathUtil.convertFromPlanckToString(stakingInfo!.active, cacheInfo.decimalsCount)} ${fromCurrency(this.currency)}\n` +
                 `Withdrawal amount: ${MathUtil.convertFromPlanckToString(stakingInfo!.total - stakingInfo!.active, cacheInfo.decimalsCount)} ${fromCurrency(this.currency)}` +
                 (warn ?? "")
         }

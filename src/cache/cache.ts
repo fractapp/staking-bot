@@ -315,11 +315,11 @@ export class Cache {
     }
 
     public async init() {
-        console.log("start updateStakingInfo")
+        console.log("start updateStakingInfo: " + new Date())
         await this.updateStakingInfo()
-        console.log("start updateValidators")
+        console.log("start updateValidators: " + new Date())
         await this.updateValidators()
-        console.log("start updateUsersStaking")
+        console.log("start updateUsersStaking: " + new Date())
         await this.updateUsersStaking()
     }
     public async subscriber() {

@@ -39,8 +39,8 @@ export class ActionHandler {
         this.txBuilderByNetwork.set(Network.Polkadot, new TxBuilder(polkadotApi, polkadotCache, Network.Polkadot))
         this.txBuilderByNetwork.set(Network.Kusama, new TxBuilder(kusamaApi, kusamaCache, Network.Kusama))
 
-        this.messageCreatorByNetwork.set(Network.Polkadot, new MessageCreator(polkadotApi, polkadotCache, Network.Polkadot, Currency.DOT))
-        this.messageCreatorByNetwork.set(Network.Kusama, new MessageCreator(kusamaApi, kusamaCache, Network.Kusama, Currency.KSM))
+        this.messageCreatorByNetwork.set(Network.Polkadot, new MessageCreator(polkadotCache, Network.Polkadot, Currency.DOT))
+        this.messageCreatorByNetwork.set(Network.Kusama, new MessageCreator(kusamaCache, Network.Kusama, Currency.KSM))
 
         this.db = db
         this.client = client
@@ -101,7 +101,7 @@ export class ActionHandler {
 
         await this.client.sendMsg({
             version: 1,
-            value: `Hi!\nYou can open a deposit (staking) for DOT or KSM and receive from ${min}% to ${max}% per annum!` +
+            value: `Hi!\nYou can open a staking deposit for DOT or KSM and receive from ${min}% to ${max}% per annum!` +
                 (isDepositExist ? "\n\nAlso, you have already opened deposits." : "") +
                 (warns != 0 ? (`\n\nYour ${warns == 1 ? 'deposit is inactive' : 'deposits are inactive'} because it is below the minimum amount.`) : ""),
             action: "",

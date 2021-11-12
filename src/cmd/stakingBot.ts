@@ -11,7 +11,8 @@ import {Const} from "../utils/const";
 
 dotenv.config()
 
-const client = new FractappClient()
+const clientUrl = process.env["CLIENT_URL"] as string
+const client = new FractappClient(clientUrl)
 let actionHandler: ActionHandler
 
 let cache: Map<Network, CacheClient> = new Map<Network, CacheClient>()
@@ -69,24 +70,31 @@ async function start() {
     }, Const.SchedulerTimeout)
 
     console.log("start app...")
+    const promisesByUser: Map<string, Promise<void>> = new Map<string, Promise<void>>()
+    const message: Map<string, boolean> = new Map<string, boolean>()
+
     while (true) {
         try {
             const newMsgs = await client.getUnreadMessages()
 
-            const promises: Array<Promise<void>> = []
             for (const msg of newMsgs.messages) {
                 console.log("msg id: " + msg.id)
                 console.log("msg: " + JSON.stringify(msg))
 
-                try {
-                    promises.push(action(msg, newMsgs.users[msg.sender]))
-                } catch (e) {
-                    console.log("Error: " + e)
+                if (!promisesByUser.has(msg.sender) && !message.has(msg.id)) {
+                    try {
+                        const p = action(msg, newMsgs.users[msg.sender]).finally(() => {
+                            promisesByUser.delete(msg.sender)
+                            message.delete(msg.id)
+                        })
+                        promisesByUser.set(msg.sender, p)
+                        message.set(msg.id, true)
+                    } catch (e) {
+                        promisesByUser.delete(msg.sender)
+                        message.delete(msg.id)
+                        console.log("Error: " + e)
+                    }
                 }
-            }
-
-            for (const promise of promises) {
-                await promise
             }
         } catch (e) {
             console.log("Error: " + e)
