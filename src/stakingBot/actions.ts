@@ -46,7 +46,12 @@ export class ActionHandler {
         this.client = client
     }
 
-    public async init(msg: Message, user: Profile) {
+    public async init(): Promise<void> {
+        await this.txBuilderByNetwork.get(Network.Polkadot)!.init()
+        await this.txBuilderByNetwork.get(Network.Kusama)!.init()
+    }
+
+    public async initMsg(msg: Message, user: Profile) {
         const stakingInfoPolkadot = await this.cacheByNetwork.get(Network.Polkadot)!.getStakingInfo()
         const stakingInfoKusama = await this.cacheByNetwork.get(Network.Kusama)!.getStakingInfo()
 
@@ -298,6 +303,8 @@ export class ActionHandler {
         const stakingInfo = await this.cacheByNetwork.get(network)!.getUsersStaking()
         const txBuilder = this.txBuilderByNetwork.get(network)!
 
+
+        console.log("start: " + new Date())
         let limit = null
         let unsignedTx: UnsignedTransaction | null = null
         switch (action) {
@@ -312,9 +319,11 @@ export class ActionHandler {
                 break
         }
 
+        console.log("#2: " + new Date())
         const hexTx = await txBuilder.fakeSign(unsignedTx!)
-
+        console.log("#3: " + new Date())
         const fee = await api.rpc.payment.queryInfo(hexTx)
+        console.log("#4: " + new Date())
         console.log("fee: " + fee.partialFee.toBn().toString())
 
         let msg = ""

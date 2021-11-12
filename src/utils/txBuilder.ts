@@ -7,10 +7,19 @@ import {Keyring} from "@polkadot/keyring";
 import BN from "bn.js";
 import {CacheClient} from "./cacheClient";
 
+type TxBase = {
+    txVersion: number;
+    genesisHash: string;
+    specVersion: number;
+    opt: OptionsWithMeta;
+    registry: TypeRegistry;
+}
+
 export class TxBuilder {
-    private api: ApiPromise
-    private cache: CacheClient
-    private network: Network
+    private readonly api: ApiPromise
+    private readonly cache: CacheClient
+    private readonly network: Network
+    private txBase: TxBase | null = null
 
     constructor(api: ApiPromise, cache: CacheClient, network: Network) {
         this.api = api
@@ -18,11 +27,7 @@ export class TxBuilder {
         this.network = network
     }
 
-    private async getBase(sender: string): Promise<{
-        opt: OptionsWithMeta,
-        txInfo: BaseTxInfo,
-        registry: TypeRegistry
-    }> {
+    public async init(): Promise<void> {
         const specVersion = this.api.runtimeVersion.specVersion.toNumber()
         const metadata = this.api.runtimeMetadata.toHex()
 
@@ -38,31 +43,44 @@ export class TxBuilder {
             registry: registry,
         };
 
-        const blockHeaderPromise = this.api.rpc.chain.getHeader()
-        const genesisHashPromise = this.api.rpc.chain.getBlockHash(0)
-        const noncePromise = this.api.rpc.system.accountNextIndex(sender)
+        const genesisHash = await this.api.rpc.chain.getBlockHash(0)
+        const txVersion = await this.api.runtimeVersion.transactionVersion.toNumber()
 
-        const blockHeader = await blockHeaderPromise
-        const genesisHash = await genesisHashPromise
+        this.txBase = {
+            txVersion: txVersion,
+            specVersion: specVersion,
+            genesisHash: genesisHash.toHex(),
+            opt: opt,
+            registry: registry
+        }
+    }
+
+    private async getBase(sender: string): Promise<{
+        opt: OptionsWithMeta,
+        txInfo: BaseTxInfo,
+        registry: TypeRegistry
+    }> {
+        const txBase = this.txBase!
+        const noncePromise = this.api.rpc.system.accountNextIndex(sender)
+        const blockHeaderPromise = await this.api.rpc.chain.getHeader()
         const nonce = await noncePromise
+        const blockHeader = await blockHeaderPromise
 
         return {
-            opt: opt,
+            opt: txBase.opt,
             txInfo: {
                 address: sender,
                 blockHash: blockHeader.hash.toHex(),
-                blockNumber: opt.registry
-                    .createType('BlockNumber', blockHeader.number.toNumber())
-                    .toNumber(),
+                blockNumber: blockHeader.number.toNumber(),
                 eraPeriod: 128,
-                genesisHash: genesisHash.toHex(),
-                metadataRpc: opt.metadataRpc,
+                genesisHash: txBase.genesisHash,
+                metadataRpc: txBase.opt.metadataRpc,
                 nonce: nonce.toNumber(),
-                specVersion: specVersion,
+                specVersion: txBase.specVersion,
                 tip: 0,
-                transactionVersion: this.api.runtimeVersion.transactionVersion.toNumber(),
+                transactionVersion: txBase.txVersion,
             },
-            registry: registry
+            registry: txBase.registry
         };
     }
 

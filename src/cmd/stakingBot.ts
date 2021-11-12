@@ -49,6 +49,9 @@ async function start() {
         try {
             await polkadotCache.updateCache()
             await kusamaCache.updateCache()
+
+            await actionHandler.init()
+
             isInit = true
         } catch (e) {
             console.log("wait init cache")
@@ -70,8 +73,7 @@ async function start() {
     }, Const.SchedulerTimeout)
 
     console.log("start app...")
-    const promisesByUser: Map<string, Promise<void>> = new Map<string, Promise<void>>()
-    const message: Map<string, boolean> = new Map<string, boolean>()
+    const usersPromise: Map<string, Promise<void>> = new Map<string, Promise<void>>()
 
     while (true) {
         try {
@@ -81,17 +83,12 @@ async function start() {
                 console.log("msg id: " + msg.id)
                 console.log("msg: " + JSON.stringify(msg))
 
-                if (!promisesByUser.has(msg.sender) && !message.has(msg.id)) {
+                if (!usersPromise.has(msg.sender)) {
                     try {
-                        const p = action(msg, newMsgs.users[msg.sender]).finally(() => {
-                            promisesByUser.delete(msg.sender)
-                            message.delete(msg.id)
-                        })
-                        promisesByUser.set(msg.sender, p)
-                        message.set(msg.id, true)
+                        const p = action(msg, newMsgs.users[msg.sender]).finally(() => usersPromise.delete(msg.sender))
+                        usersPromise.set(msg.sender, p)
                     } catch (e) {
-                        promisesByUser.delete(msg.sender)
-                        message.delete(msg.id)
+                        usersPromise.delete(msg.sender)
                         console.log("Error: " + e)
                     }
                 }
@@ -113,7 +110,7 @@ async function action(msg: Message, user: Profile) {
     try {
         switch (msg.action) {
             case DefaultMsgAction.Init:
-                await actionHandler.init(msg, user)
+                await actionHandler.initMsg(msg, user)
                 break
             case MsgAction.ChooseNewDeposit:
                 await actionHandler.chooseNewDeposit(msg, user)
@@ -142,10 +139,10 @@ async function action(msg: Message, user: Profile) {
                 await actionHandler.withdrawRequests(msg, user)
                 break
             default:
-                await actionHandler.init(msg, user)
+                await actionHandler.initMsg(msg, user)
         }
     } catch (e) {
-        await actionHandler.init(msg, user)
+        await actionHandler.initMsg(msg, user)
     }
     await client.setRead([msg.id])
     console.log("Success: (msgId)" + msg.id)

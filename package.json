@@ -7,8 +7,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
-    "bot": "node ./bin/cmd/stakingBot.js",
-    "cache": "node ./bin/cmd/cache.js",
+    "bot": "node ./src//bin/cmd/stakingBot.js",
+    "cache": "node ./src/bin/cmd/cache.js",
     "devBot": "ts-node ./src/cmd/stakingBot.ts",
     "devCache": "ts-node ./src/cmd/cache.ts"
   },
