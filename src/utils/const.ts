@@ -1,12 +1,8 @@
-import BN from "bn.js";
-
 export namespace Const {
     export const Accuracy = 1000n
     export const Sec = 1000
     export const Min = 60 * Sec
     export const Hour = 60 * Min
-    export const StakingInfoUpdateTimeout = 20 * Min
-    export const ValidatorsUpdateTimeout = 10 * Min
     export const NormalCommission = 20
 
     export const SchedulerTimeout = 12 * Hour

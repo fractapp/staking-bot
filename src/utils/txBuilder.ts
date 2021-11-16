@@ -115,7 +115,7 @@ export class TxBuilder {
             const bondExtra = methods.staking.bondExtra({
                 maxAdditional: amount
             }, base.txInfo, base.opt)
-                /*    if (!targets.isNone) {
+            /*    if (!targets.isNone) {
                 const oldTargets = targets.unwrap().targets
                 let count = 0
 
@@ -141,7 +141,6 @@ export class TxBuilder {
                     return bondExtra
                 }
             } */
-
             return bondExtra
         }
     }
@@ -197,7 +196,6 @@ export class TxBuilder {
                 version: EXTRINSIC_VERSION,
             })
             .sign(account);
-
 
         return construct.signedTx(unsignedTx, signature, base.opt);
     }

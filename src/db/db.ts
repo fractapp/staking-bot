@@ -43,15 +43,4 @@ export class DB {
         const users: Array<IUser>  = await User.find()
         return users
     }
-
-    public async getUserIdByAddress(currency: Currency, address: string): Promise<IUser | null> {
-        const addresses: Addresses = <Addresses>{}
-        addresses[currency] = address
-
-        const user: IUser | null = await User.findOne({
-            addresses: addresses,
-        })
-
-        return user
-    }
 }

@@ -43,7 +43,7 @@ export class Scheduler  {
                 const currency = getNativeCurrency(network)
                 const usersStakingInfo = usersStakingInfoByNetwork.get(network)!
 
-                const address = usersStakingInfo[user.addresses[network]]
+                const address = user.addresses[network]
                 const stakingInfo = usersStakingInfo[user.addresses[network]]
                 if (stakingInfo == undefined) {
                     continue
@@ -77,7 +77,10 @@ export class Scheduler  {
                         }
                     }
 
-                    if (count / topValidators.length <= Const.ThresholdUserNominations) {
+                    if (
+                        (count < topValidators.length && topValidators.length/count >  Const.ThresholdUserNominations) ||
+                        (count / topValidators.length <= Const.ThresholdUserNominations)
+                    ) {
                         console.log(`send update nominations (${address}): ${user.userId}`)
                         const args: Record<string, string> = {
                             arguments: JSON.stringify({

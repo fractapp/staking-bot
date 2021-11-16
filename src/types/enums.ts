@@ -17,6 +17,17 @@ export enum Currency {
     KSM,
 }
 
+export enum MsgAction {
+    ChooseNewDeposit = "chooseNewDeposit",
+    WithdrawRequests = "withdrawRequests",
+    MyDeposits = "myDeposits",
+    Enter = "enter",
+    ChooseWithdraw = "chooseWithdraw",
+    Confirm = "confirm",
+    SuccessTx = "successTx",
+    ErrorTx = "errorTx"
+}
+
 
 export function getNativeCurrency(network: Network): Currency {
     switch (network) {
@@ -34,21 +45,6 @@ export function getNetwork(currency: Currency): Network {
         case Currency.KSM:
             return Network.Kusama
     }
-}
-
-export function getSymbol(currency: Currency) {
-    let symbol = '';
-    switch (currency) {
-        case Currency.DOT:
-            symbol = 'DOT';
-            break;
-        case Currency.KSM:
-            symbol = 'KSM';
-            break;
-        default:
-            throw new Error('invalid currency');
-    }
-    return symbol;
 }
 
 export function toCurrency(currency: string): Currency {

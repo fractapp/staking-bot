@@ -1,5 +1,3 @@
-import BN from "bn.js";
-
 export namespace MathUtil {
     export function convertFromPlanckToString(
         planck: bigint,

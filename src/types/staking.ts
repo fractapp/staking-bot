@@ -1,5 +1,3 @@
-import BN from "bn.js";
-
 export type ValidatorInfo = {
     ownStake: string,
     totalStake: string,

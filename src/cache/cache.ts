@@ -70,7 +70,7 @@ export class Cache {
 
         const minStakingAmountPromise = this.api.query.staking.minNominatorBond()
 
-        const maxSystemNominatorsCount =  Number(await maxSystemNominatorsCountPromise)
+        const maxSystemNominatorsCount = Number(await maxSystemNominatorsCountPromise)
         const nowNominatorsCount =  Number(await nowNominatorsCountPromise)
         const chainInfo = await chainInfoPromise
 
@@ -322,6 +322,7 @@ export class Cache {
         console.log("start updateUsersStaking: " + new Date())
         await this.updateUsersStaking()
     }
+
     public async subscriber() {
         await this.api.query.staking.activeEra((activeEra) => {
             const era =  activeEra.unwrap().index.toBn().toNumber()

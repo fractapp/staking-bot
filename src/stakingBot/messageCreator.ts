@@ -1,8 +1,7 @@
 import {Button, Profile} from "../types/api";
-import {Action, Currency, fromCurrency, Network} from "../types/enums";
+import {Action, Currency, fromCurrency, MsgAction, Network} from "../types/enums";
 import {MathUtil} from "../utils/math";
 import {Const} from "../utils/const";
-import {MsgAction} from "./actions";
 import {CacheClient} from "../utils/cacheClient";
 
 export type DepositInfo = {
@@ -36,14 +35,15 @@ export class MessageCreator {
 
     public async warning(activeAmount: bigint): Promise<string | null> {
         const cacheInfo = await this.cache.getStakingInfo()
-        const amount = MathUtil.convertFromPlanckToString(cacheInfo.minStakingAmountPlanks, cacheInfo.decimalsCount)
 
         if (activeAmount < cacheInfo.minStakingAmountPlanks) {
-            return `\n\nThe ${fromCurrency(this.currency)} deposit is not active. The deposit must have more than the minimum amount of ${amount} ${fromCurrency(this.currency)}!`
+            const minAmount = MathUtil.convertFromPlanckToString(cacheInfo.minStakingAmountPlanks, cacheInfo.decimalsCount)
+            return `\n\nThe ${fromCurrency(this.currency)} deposit is not active. The deposit must have more than the minimum amount of ${minAmount} ${fromCurrency(this.currency)}!`
         }
 
         return null
     }
+
     public async getNewDeposit(user: Profile): Promise<NewDepositInfo> {
         const info = await this.cache.getStakingInfo()
         const usersStaking = await this.cache.getUsersStaking()
@@ -78,7 +78,7 @@ export class MessageCreator {
                 isWarnExist = true
             }
 
-            value =   (this.currency == Currency.KSM ? '🔵KSM Deposit🔵\n' : '🔴DOT Deposit🔴\n') +
+            value = (this.currency == Currency.KSM ? '🔵KSM Deposit🔵\n' : '🔴DOT Deposit🔴\n') +
                 `Total withdrawal request: ${stakingInfo!.unlocking.length}\n` +
                 `Active deposit amount: ${MathUtil.convertFromPlanckToString(stakingInfo!.active, cacheInfo.decimalsCount)} ${fromCurrency(this.currency)}\n` +
                 `Withdrawal amount: ${MathUtil.convertFromPlanckToString(stakingInfo!.total - stakingInfo!.active, cacheInfo.decimalsCount)} ${fromCurrency(this.currency)}` +

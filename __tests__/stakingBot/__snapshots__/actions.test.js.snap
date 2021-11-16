@@ -1,0 +1,322 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test chooseNewDeposit 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "enter",
+            "arguments": Object {
+              "action": "1",
+              "currency": "DOT",
+            },
+            "imageUrl": null,
+            "value": "🔴 Add amount to DOT deposit",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "enter",
+            "arguments": Object {
+              "action": "0",
+              "currency": "KSM",
+            },
+            "imageUrl": null,
+            "value": "🔵 Open KSM deposit",
+          },
+        ],
+      },
+    ],
+    "value": "Deposits information:
+
+Polkadot deposit
+
+Kusama deposit",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test chooseWithdraw 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "enter",
+            "arguments": Object {
+              "action": "2",
+              "currency": "DOT",
+            },
+            "imageUrl": null,
+            "value": "🔴 DOT",
+          },
+          Object {
+            "action": "enter",
+            "arguments": Object {
+              "action": "2",
+              "currency": "KSM",
+            },
+            "imageUrl": null,
+            "value": "🔵 KSM",
+          },
+        ],
+      },
+    ],
+    "value": "Please, choose deposit for withdraw: ",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test enter 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "/enterAmount",
+            "arguments": Object {
+              "arguments": "{\\"currency\\":\\"DOT\\",\\"action\\":\\"0\\"}",
+              "currency": "DOT",
+              "fee": "10",
+              "limit": "",
+              "next": "confirm",
+            },
+            "imageUrl": null,
+            "value": "💵 Enter amount",
+          },
+          Object {
+            "action": "/init",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "✖️ Cancel",
+          },
+        ],
+      },
+    ],
+    "value": "error",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test errorTx 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "/init",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "↩️ Try again",
+          },
+        ],
+      },
+    ],
+    "value": "An error has occurred. Please, try again or contact with support: support@fractapp.com.",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test initMsg 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "chooseNewDeposit",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "Open deposit",
+          },
+          Object {
+            "action": "/openUrl",
+            "arguments": Object {
+              "link": "https://wiki.polkadot.network/ru-RU/docs/learn-staking",
+            },
+            "imageUrl": null,
+            "value": "Info",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "myDeposits",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "My deposits",
+          },
+        ],
+      },
+    ],
+    "value": "Hi!
+You can open a staking deposit for DOT or KSM and receive from 6% to 13% per annum!
+
+Also, you have already opened deposits.
+
+Your deposits are inactive because it is below the minimum amount.",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test myDeposits 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "enter",
+            "arguments": Object {
+              "action": "2",
+              "currency": "KSM",
+            },
+            "imageUrl": null,
+            "value": "Create a withdrawal request",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "chooseNewDeposit",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "Add amount",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "withdrawRequests",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "Withdrawal requests",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "/init",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "Back",
+          },
+        ],
+      },
+    ],
+    "value": "Your deposits: 
+
+Polkadot deposit
+
+Kusama deposit
+
+",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test successTx 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "/init",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "↩️ Return to menu",
+          },
+        ],
+      },
+    ],
+    "value": "Wait for the confirmation of the transaction.",
+    "version": 1,
+  },
+]
+`;
+
+exports[`test withdrawRequests 1`] = `
+Array [
+  Object {
+    "action": "",
+    "args": Object {},
+    "receiver": "sender",
+    "rows": Array [
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "action",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "v1",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "action",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "v2",
+          },
+        ],
+      },
+      Object {
+        "buttons": Array [
+          Object {
+            "action": "myDeposits",
+            "arguments": Object {},
+            "imageUrl": null,
+            "value": "Back",
+          },
+        ],
+      },
+    ],
+    "value": "Your withdrawal requests: 
+
+Polkadot
+Kusama",
+    "version": 1,
+  },
+]
+`;

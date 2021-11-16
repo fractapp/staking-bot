@@ -1,5 +1,14 @@
 import {DefaultMsgAction, Message, Profile, Row} from "../types/api";
-import {Action, Currency, fromCurrency, getNativeCurrency, getNetwork, Network, toCurrency} from "../types/enums";
+import {
+    Action,
+    Currency,
+    fromCurrency,
+    getNativeCurrency,
+    getNetwork,
+    MsgAction,
+    Network,
+    toCurrency
+} from "../types/enums";
 import {ApiPromise} from "@polkadot/api";
 import {FractappClient} from "../fractapp/client";
 import {TxBuilder} from "../utils/txBuilder";
@@ -9,17 +18,6 @@ import {UnsignedTransaction} from "@substrate/txwrapper-polkadot";
 import {MessageCreator} from "./messageCreator";
 import {DB} from "../db/db";
 import {CacheClient} from "../utils/cacheClient";
-
-export enum MsgAction {
-    ChooseNewDeposit = "chooseNewDeposit",
-    WithdrawRequests = "withdrawRequests",
-    MyDeposits = "myDeposits",
-    Enter = "enter",
-    ChooseWithdraw = "chooseWithdraw",
-    Confirm = "confirm",
-    SuccessTx = "successTx",
-    ErrorTx = "errorTx"
-}
 
 export class ActionHandler {
     private client: FractappClient
@@ -164,7 +162,6 @@ export class ActionHandler {
         )
 
         const rows: Array<Row> = []
-
         if (polkadotDeposit.hasActiveAmount || kusamaDeposit.hasActiveAmount) {
             const isAllActiveDeposits = polkadotDeposit.hasActiveAmount && kusamaDeposit.hasActiveAmount
             const activeAmountCurrency = polkadotDeposit.hasActiveAmount ? Currency.DOT : Currency.KSM
@@ -303,8 +300,6 @@ export class ActionHandler {
         const stakingInfo = await this.cacheByNetwork.get(network)!.getUsersStaking()
         const txBuilder = this.txBuilderByNetwork.get(network)!
 
-
-        console.log("start: " + new Date())
         let limit = null
         let unsignedTx: UnsignedTransaction | null = null
         switch (action) {
@@ -319,12 +314,8 @@ export class ActionHandler {
                 break
         }
 
-        console.log("#2: " + new Date())
         const hexTx = await txBuilder.fakeSign(unsignedTx!)
-        console.log("#3: " + new Date())
         const fee = await api.rpc.payment.queryInfo(hexTx)
-        console.log("#4: " + new Date())
-        console.log("fee: " + fee.partialFee.toBn().toString())
 
         let msg = ""
         switch (action) {

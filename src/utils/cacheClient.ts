@@ -42,7 +42,6 @@ export class CacheClient {
             throw new Error("invalid update cache")
         }
 
-
         this.validators = response.data.validators
         this.topValidators = response.data.topValidators
         this.stakingInfo = response.data.stakingInfo
@@ -59,6 +58,7 @@ export class CacheClient {
 
         return this.usersStaking
     }
+
     public async getStakingInfo(): Promise<StakingInfo> {
         const now = Date.now()
         if (now > this.lastCacheTime + cacheLifetime) {
@@ -67,13 +67,14 @@ export class CacheClient {
 
         return this.stakingInfo!
     }
-    public async getValidators(): Promise<Record<string, ValidatorInfo>> {
-        const now = Date.now()
-        if (now > this.lastCacheTime + cacheLifetime) {
-            await this.updateCache()
-        }
-        return this.validators
-    }
+
+    /* public async getValidators(): Promise<Record<string, ValidatorInfo>> {
+         const now = Date.now()
+         if (now > this.lastCacheTime + cacheLifetime) {
+             await this.updateCache()
+         }
+         return this.validators
+     }*/
     public async getTopValidators(): Promise<Array<string>> {
         const now = Date.now()
         if (now > this.lastCacheTime + cacheLifetime) {

@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test getDeposit with non-empty deposit 1`] = `
+"🔴DOT Deposit🔴
+Total withdrawal request: 2
+Active deposit amount: 0.9 DOT
+Withdrawal amount: 0.1 DOT"
+`;
+
+exports[`test getNewDeposit 1`] = `
+"🔴DOT Deposit🔴
+Annual yield: undefined%
+Withdrawal duration: undefined days 
+Minimum amount: 1.234 DOT"
+`;
+
+exports[`test getWithdrawRequests 1`] = `
+"🔴DOT requests🔴
+
+1.25 DOT unlocked after 0.20833333333333334 days
+0.25 DOT unlocked after 0.20833333333333334 days
+
+
+You can withdraw 5.5 DOT"
+`;
+
+exports[`test warning 1`] = `
+"
+
+The DOT deposit is not active. The deposit must have more than the minimum amount of 0.123 DOT!"
+`;
