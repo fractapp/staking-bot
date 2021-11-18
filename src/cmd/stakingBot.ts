@@ -1,8 +1,8 @@
 import {DefaultMsgAction, Message, Profile} from "../types/api";
-import {Network, toCurrency} from "../types/enums";
+import {MsgAction, Network, toCurrency} from "../types/enums";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import dotenv from "dotenv";
-import {ActionHandler, MsgAction} from "../stakingBot/actions";
+import {ActionHandler} from "../stakingBot/actions";
 import {FractappClient} from "../fractapp/client";
 import {DB} from "../db/db";
 import {Scheduler} from "../stakingBot/scheduler";
@@ -11,7 +11,7 @@ import {Const} from "../utils/const";
 
 dotenv.config()
 
-const clientUrl = process.env["CLIENT_URL"] as string
+const clientUrl = process.env["FRACTAPP_CLIENT_URL"] as string
 const client = new FractappClient(clientUrl)
 let actionHandler: ActionHandler
 

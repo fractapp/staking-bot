@@ -49,6 +49,7 @@ export class FractappClient {
         await cryptoWaitReady()
         let authKey = new Keyring({type: 'sr25519'}).addFromUri(seed + '//auth');
 
+        console.log("authId: " + authKey.publicKey)
         let accountsRq: Record<Currency, any> = <Record<Currency, any>>{};
         const time = Math.round(new Date().getTime() / 1000);
         const authPubKey = u8aToHex(authKey.publicKey);

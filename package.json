@@ -7,10 +7,10 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "bot": "node ./src//bin/cmd/stakingBot.js",
-    "cache": "node ./src/bin/cmd/cache.js",
-    "devBot": "ts-node ./src/cmd/stakingBot.ts",
+    "test": "jest --coverage",
+    "stakingBot": "node ./bin/src/cmd/stakingBot.js",
+    "cache": "node ./bin/src/cmd/cache.js",
+    "devStakingBot": "ts-node ./src/cmd/stakingBot.ts",
     "devCache": "ts-node ./src/cmd/cache.ts"
   },
   "dependencies": {
